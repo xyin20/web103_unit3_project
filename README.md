@@ -38,11 +38,7 @@ The following **additional** features are implemented:
 
 Here's a walkthrough of implemented required features:
 
-<!-- Replace this placeholder after recording the walkthrough. The final walkthrough should show the app, the Render Postgres dashboard, and table contents using SELECT * FROM locations; and SELECT * FROM events;. -->
-
-<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
-
-GIF created with ScreenToGif
+https://www.loom.com/share/4a416f5caeb8407aa629765cb6ac028c
 
 ## Notes
 
