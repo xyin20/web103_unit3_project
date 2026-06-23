@@ -1,58 +1,86 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import '../css/Event.css'
 
-const Event = (props) => {
+const getDateTime = (date, time) => {
+    if (!date || !time) {
+        return null
+    }
 
-    const [event, setEvent] = useState([])
-    const [time, setTime] = useState([])
-    const [remaining, setRemaining] = useState([])
+    const normalizedTime = time.length === 5 ? `${time}:00` : time
+    const eventDate = new Date(`${date}T${normalizedTime}`)
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const eventData = await EventsAPI.getEventsById(props.id)
-                setEvent(eventData)
-            }
-            catch (error) {
-                throw error
-            }
-        }) ()
-    }, [])
+    return Number.isNaN(eventDate.getTime()) ? null : eventDate
+}
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const result = await dates.formatTime(event.time)
-                setTime(result)
-            }
-            catch (error) {
-                throw error
-            }
-        }) ()
-    }, [event])
+const formatDate = (date) => {
+    const eventDate = getDateTime(date, '00:00')
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const timeRemaining = await dates.formatRemainingTime(event.remaining)
-                setRemaining(timeRemaining)
-                dates.formatNegativeTimeRemaining(remaining, event.id)
-            }
-            catch (error) {
-                throw error
-            }
-        }) ()
-    }, [event])
+    if (!eventDate) {
+        return date
+    }
+
+    return eventDate.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    })
+}
+
+const formatTime = (time) => {
+    const eventDate = getDateTime('2026-01-01', time)
+
+    if (!eventDate) {
+        return time
+    }
+
+    return eventDate.toLocaleTimeString(undefined, {
+        hour: 'numeric',
+        minute: '2-digit'
+    })
+}
+
+const getRemaining = (date, time) => {
+    const eventDate = getDateTime(date, time)
+
+    if (!eventDate) {
+        return { text: '', isPast: false }
+    }
+
+    const diff = eventDate.getTime() - Date.now()
+
+    if (diff <= 0) {
+        return { text: 'Event has started', isPast: true }
+    }
+
+    const totalMinutes = Math.floor(diff / 60000)
+    const days = Math.floor(totalMinutes / 1440)
+    const hours = Math.floor((totalMinutes % 1440) / 60)
+    const minutes = totalMinutes % 60
+
+    if (days > 0) {
+        return { text: `${days}d ${hours}h remaining`, isPast: false }
+    }
+
+    if (hours > 0) {
+        return { text: `${hours}h ${minutes}m remaining`, isPast: false }
+    }
+
+    return { text: `${minutes}m remaining`, isPast: false }
+}
+
+const Event = ({ title, date, time, image, locationName }) => {
+    const remaining = getRemaining(date, time)
 
     return (
         <article className='event-information'>
-            <img src={event.image} />
+            <img src={image} alt={title} />
 
             <div className='event-information-overlay'>
                 <div className='text'>
-                    <h3>{event.title}</h3>
-                    <p><i className="fa-regular fa-calendar fa-bounce"></i> {event.date} <br /> {time}</p>
-                    <p id={`remaining-${event.id}`}>{remaining}</p>
+                    <h3>{title}</h3>
+                    {locationName && <p>{locationName}</p>}
+                    <p><i className="fa-regular fa-calendar fa-bounce"></i> {formatDate(date)} <br /> {formatTime(time)}</p>
+                    <p className={remaining.isPast ? 'negative-time-remaining' : ''}>{remaining.text}</p>
                 </div>
             </div>
         </article>

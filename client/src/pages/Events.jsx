@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Event from '../components/Event'
-import LocationsAPI from '../services/LocationsAPI'
+import EventsAPI from '../services/EventsAPI'
 import '../css/LocationEvents.css'
 
-const LocationEvents = ({index}) => {
-    const [location, setLocation] = useState({})
+const Events = () => {
     const [events, setEvents] = useState([])
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
@@ -12,15 +11,11 @@ const LocationEvents = ({index}) => {
     useEffect(() => {
         let isMounted = true
 
-        const loadLocationEvents = async () => {
+        const loadEvents = async () => {
             try {
-                const [locationData, eventsData] = await Promise.all([
-                    LocationsAPI.getLocationById(index),
-                    LocationsAPI.getEventsByLocationId(index)
-                ])
+                const eventsData = await EventsAPI.getAllEvents()
 
                 if (isMounted) {
-                    setLocation(locationData)
                     setEvents(eventsData)
                 }
             }
@@ -36,12 +31,12 @@ const LocationEvents = ({index}) => {
             }
         }
 
-        loadLocationEvents()
+        loadEvents()
 
         return () => {
             isMounted = false
         }
-    }, [index])
+    }, [])
 
     if (loading) {
         return <h2>Loading events...</h2>
@@ -54,19 +49,15 @@ const LocationEvents = ({index}) => {
     return (
         <div className='location-events'>
             <header>
-                <div className='location-image'>
-                    <img src={location.image} alt={location.name} />
-                </div>
-
                 <div className='location-info'>
-                    <h2>{location.name}</h2>
-                    <p>{location.address}, {location.city}, {location.state} {location.zip}</p>
+                    <h2>All Events</h2>
+                    <p>Upcoming community events across UnityGrid Plaza</p>
                 </div>
             </header>
 
             <main>
                 {
-                    events && events.length > 0 ? events.map((event, index) =>
+                    events && events.length > 0 ? events.map((event) =>
                         <Event
                             key={event.id}
                             id={event.id}
@@ -74,13 +65,13 @@ const LocationEvents = ({index}) => {
                             date={event.date}
                             time={event.time}
                             image={event.image}
-                            locationName={location.name}
+                            locationName={event.location_name}
                         />
-                    ) : <h2><i className="fa-regular fa-calendar-xmark fa-shake"></i> {'No events scheduled at this location yet!'}</h2>
+                    ) : <h2>No events scheduled yet!</h2>
                 }
             </main>
         </div>
     )
 }
 
-export default LocationEvents
+export default Events
